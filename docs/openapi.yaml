@@ -1,0 +1,651 @@
+openapi: 3.0.3
+info:
+  title: Customer Platform API
+  description: >
+    API specification for the Customer Platform including customers, orders, gift cards,
+    cases, and related resources.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+    description: Example base URL
+
+tags:
+  - name: Customers
+  - name: CustomerComments
+  - name: Orders
+  - name: Giftcards
+  - name: Cases
+  - name: CustomMadeOrders
+  - name: CustomConfigurations
+  - name: Sustain
+  - name: Reminders
+
+paths:
+  /customers:
+    get:
+      tags: [Customers]
+      summary: Lista alla kunder
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of all customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+
+  /customers/{id}:
+    get:
+      tags: [Customers]
+      summary: Hämta kundinformation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+    put:
+      tags: [Customers]
+      summary: Uppdatera sin kundprofil
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerUpdate"
+      responses:
+        "200":
+          description: Updated customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+
+  /customers/search:
+    get:
+      tags: [Customers]
+      summary: Sök efter kund baserat på namn, e-post eller kundnummer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+        - name: email
+          in: query
+          schema:
+            type: string
+        - name: customerNumber
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of matching customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+
+  /customers/{id}/comments:
+    get:
+      tags: [CustomerComments]
+      summary: Lista alla kommentarer kopplade till en kund
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of customer comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+    post:
+      tags: [CustomerComments]
+      summary: Lägg till en ny kommentar för en kund
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentCreate"
+      responses:
+        "201":
+          description: Created comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+
+  /customers/{id}/orders:
+    get:
+      tags: [Orders]
+      summary: Hämta kundens orderhistorik
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+
+  /orders/{orderId}:
+    get:
+      tags: [Orders]
+      summary: Hämta specifik order
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /giftcards/validate:
+    post:
+      tags: [Giftcards]
+      summary: Validera presentkort (kontroll av kod, saldo, giltighet)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GiftcardValidation"
+
+  /giftcards/register:
+    post:
+      tags: [Giftcards]
+      summary: Registrera/aktivera presentkort till kund
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                customerId:
+                  type: string
+      responses:
+        "201":
+          description: Giftcard registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  assignedTo:
+                    type: string
+
+  /customers/{id}/giftcards:
+    get:
+      tags: [Giftcards]
+      summary: Lista kundens presentkort
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of giftcards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Giftcard"
+
+  /giftcards/{giftCardId}:
+    get:
+      tags: [Giftcards]
+      summary: Hämta info om specifikt presentkort
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: giftCardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Giftcard details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Giftcard"
+
+  /customers/{id}/cases:
+    get:
+      tags: [Cases]
+      summary: Lista kundens ärenden
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Case"
+
+  /cases/{caseId}:
+    get:
+      tags: [Cases]
+      summary: Hämta specifikt ärende
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Case details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+    put:
+      tags: [Cases]
+      summary: Uppdatera ärendestatus
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+      responses:
+        "200":
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+
+  /customers/{id}/custom-orders:
+    get:
+      tags: [CustomMadeOrders]
+      summary: Lista kundens skräddarsydda produkter som har beställts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of custom orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomOrder"
+
+  /custom-orders/{customOrderId}:
+    get:
+      tags: [CustomMadeOrders]
+      summary: Visa detaljer för en specifik skräddarsydd beställning
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customOrderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Custom order details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomOrder"
+
+  /custom-orders/{customOrderId}/products:
+    get:
+      tags: [CustomMadeOrders]
+      summary: Visa produkter som ingår i den skräddarsydda beställningen
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customOrderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Products for the custom order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /customers/{id}/custom-configurations:
+    get:
+      tags: [CustomConfigurations]
+      summary: Lista kundens sparade skräddarsydda konfigurationer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of configurations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Configuration"
+
+  /custom-configurations/{configId}:
+    get:
+      tags: [CustomConfigurations]
+      summary: Visa en specifik sparad konfiguration
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: configId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Configuration details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Configuration"
+
+  /customers/{id}/sustain/overview:
+    get:
+      tags: [Sustain]
+      summary: Hämta kundens kontoöversikt (hållbarhetsdata, poäng, klimatpåverkan)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Sustain overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SustainOverview"
+
+  /customers/{id}/reminders:
+    get:
+      tags: [Reminders]
+      summary: Lista alla påminnelser för en kund
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reminder"
+    post:
+      tags: [Reminders]
+      summary: Skapa en ny påminnelse för en kund
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReminderCreate"
+      responses:
+        "201":
+          description: Created reminder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Customer:
+      type: object
+      properties:
+        id: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        address:
+          type: object
+          properties:
+            street: { type: string }
+            zip: { type: string }
+            city: { type: string }
+            country: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    CustomerUpdate:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+
+    Comment:
+      type: object
+      properties:
+        id: { type: string }
+        text: { type: string }
+        author: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    CommentCreate:
+      type: object
+      properties:
+        text: { type: string }
+        author: { type: string }
+
+    Order:
+      type: object
+      properties:
+        orderId: { type: string }
+        customerId: { type: string }
+        date: { type: string, format: date-time }
+        status: { type: string }
+        totalAmount: { type: number }
+        currency: { type: string }
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+
+    Product:
+      type: object
+      properties:
+        productId: { type: string }
+        name: { type: string }
+        quantity: { type: integer }
+        price: { type: number }
+
+    Giftcard:
+      type: object
+      properties:
+        giftCardId: { type: string }
+        balance: { type: number }
+        expiresAt: { type: string, format: date-time }
+        status: { type: string }
+
+    GiftcardValidation:
+      type: object
+      properties:
+        isValid: { type: boolean }
+        balance: { type: number }
+        currency: { type: string }
+        expiresAt: { type: string, format: date-time }
+
+    Case:
+      type: object
+      properties:
+        caseId: { type: string }
+        title: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    CustomOrder:
+      type: object
+      properties:
+        customOrderId: { type: string }
+        customerId: { type: string }
+        date: { type: string, format: date-time }
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+
+    Configuration:
+      type: object
+      properties:
+        configId: { type: string }
+        name: { type: string }
+        createdAt: { type: string, format: date-time }
+        details: { type: object }
+
+    SustainOverview:
+      type: object
+      properties:
+        customerId: { type: string }
+        points: { type: number }
+        co2Saved: { type: number }
+        badgeLevel: { type: string }
+
+    Reminder:
+      type: object
+      properties:
+        reminderId: { type: string }
+        title: { type: string }
+        date: { type: string, format: date-time }
+        notes: { type: string }
+
+    ReminderCreate:
+      type: object
+      properties:
+        title: { type: string }
+        date: { type: string, format: date-time }
+        notes: { type: string }
