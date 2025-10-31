@@ -1,9 +1,8 @@
 openapi: 3.0.3
 info:
-  title: Customer Platform API
+  title: OJ CRM API
   description: >
-    API specification for the Customer Platform including customers, orders, gift cards,
-    cases, and related resources.
+    API specification for the CRM API for OJ.
   version: 1.0.0
 servers:
   - url: https://api.example.com
@@ -82,7 +81,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CustomerUpdate"
+              $ref: "#/components/schemas/Customer"
       responses:
         "200":
           description: Updated customer
@@ -550,10 +549,24 @@ components:
       type: object
       properties:
         id: { type: string }
-        firstName: { type: string }
-        lastName: { type: string }
+        name: { type: string }
         email: { type: string }
         phone: { type: string }
+        birthday: { type: string, format: date }
+        customerNumber: { type: string }
+        emailNewsletter: { type: boolean }
+        receiveSmsOffers: { type: boolean }
+        stores:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              id:
+                type: string
+              selected:
+                type: boolean
         address:
           type: object
           properties:
@@ -561,15 +574,6 @@ components:
             zip: { type: string }
             city: { type: string }
             country: { type: string }
-        createdAt: { type: string, format: date-time }
-
-    CustomerUpdate:
-      type: object
-      properties:
-        firstName: { type: string }
-        lastName: { type: string }
-        email: { type: string }
-        phone: { type: string }
 
     Comment:
       type: object
@@ -588,10 +592,17 @@ components:
       type: object
       properties:
         orderId: { type: string }
+        type:
+          type: string
+          enum:
+            - online
+            - store
+        storeId: { type: number }
         customerId: { type: string }
         date: { type: string, format: date-time }
         status: { type: string }
         totalAmount: { type: number }
+        shipping: { type: string }
         currency: { type: string }
         items:
           type: array
@@ -604,6 +615,8 @@ components:
         productId: { type: string }
         name: { type: string }
         quantity: { type: integer }
+        size: { type: string }
+        color: { type: string }
         price: { type: number }
 
     Giftcard:
@@ -628,6 +641,8 @@ components:
         caseId: { type: string }
         title: { type: string }
         status: { type: string }
+        customerId: { type: string }
+        orderId: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
@@ -662,13 +677,16 @@ components:
       type: object
       properties:
         reminderId: { type: string }
-        title: { type: string }
+        customerEmail: { type: string }
+        customerId: { type: string }
+        articleId: { type: string }
         date: { type: string, format: date-time }
         notes: { type: string }
 
     ReminderCreate:
       type: object
       properties:
-        title: { type: string }
+        customerEmail: { type: string }
+        articleId: { type: string }
         date: { type: string, format: date-time }
         notes: { type: string }
