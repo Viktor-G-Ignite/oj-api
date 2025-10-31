@@ -24,19 +24,29 @@ paths:
   /customers:
     get:
       tags: [Customers]
-      summary: Lista alla kunder
+      summary: Lista alla kunder (med pagination)
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number (starts at 1)
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of results per page
+          schema:
+            type: integer
+            default: 20
       responses:
         "200":
-          description: List of all customers
+          description: Paged list of customers
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Customer"
-
+                $ref: "#/components/schemas/CustomerResponse"
   /customers/{id}:
     get:
       tags: [Customers]
@@ -522,6 +532,20 @@ components:
       bearerFormat: JWT
 
   schemas:
+    CustomerResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of customers
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/Customer"
     Customer:
       type: object
       properties:
@@ -559,7 +583,6 @@ components:
       type: object
       properties:
         text: { type: string }
-        author: { type: string }
 
     Order:
       type: object
