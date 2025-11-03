@@ -10,12 +10,12 @@ servers:
 
 tags:
   - name: Customers
-  - name: CustomerComments
+  - name: Customer Comments
   - name: Orders
   - name: Giftcards
   - name: Cases
-  - name: CustomMadeOrders
-  - name: CustomConfigurations
+  - name: Custom Made Orders
+  - name: Custom Configurations
   - name: Sustain
   - name: Reminders
 
@@ -121,7 +121,7 @@ paths:
 
   /customers/{id}/comments:
     get:
-      tags: [CustomerComments]
+      tags: [Customer Comments]
       summary: Lista alla kommentarer kopplade till en kund
       security:
         - bearerAuth: []
@@ -141,7 +141,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Comment"
     post:
-      tags: [CustomerComments]
+      tags: [Customer Comments]
       summary: Lägg till en ny kommentar för en kund
       security:
         - bearerAuth: []
@@ -359,8 +359,8 @@ paths:
 
   /customers/{id}/custom-orders:
     get:
-      tags: [CustomMadeOrders]
-      summary: Lista kundens skräddarsydda produkter som har beställts
+      tags: [Custom Made Orders]
+      summary: Lista kundens ordrar med skräddarsydda produkter
       security:
         - bearerAuth: []
       parameters:
@@ -371,59 +371,17 @@ paths:
             type: string
       responses:
         "200":
-          description: List of custom orders
+          description: List of orders
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/CustomOrder"
-
-  /custom-orders/{customOrderId}:
-    get:
-      tags: [CustomMadeOrders]
-      summary: Visa detaljer för en specifik skräddarsydd beställning
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: customOrderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Custom order details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CustomOrder"
-
-  /custom-orders/{customOrderId}/products:
-    get:
-      tags: [CustomMadeOrders]
-      summary: Visa produkter som ingår i den skräddarsydda beställningen
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: customOrderId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Products for the custom order
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                  $ref: "#/components/schemas/Order"
 
   /customers/{id}/custom-configurations:
     get:
-      tags: [CustomConfigurations]
+      tags: [Custom Configurations]
       summary: Lista kundens sparade skräddarsydda konfigurationer
       security:
         - bearerAuth: []
@@ -445,7 +403,7 @@ paths:
 
   /custom-configurations/{configId}:
     get:
-      tags: [CustomConfigurations]
+      tags: [Custom Configurations]
       summary: Visa en specifik sparad konfiguration
       security:
         - bearerAuth: []
@@ -607,17 +565,36 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/Product"
+            $ref: "#/components/schemas/LineItem"
 
-    Product:
+    LineItem:
       type: object
       properties:
+        type:
+          type: string
+          enum:
+            - normal
+            - customMade
         productId: { type: string }
         name: { type: string }
         quantity: { type: integer }
         size: { type: string }
         color: { type: string }
         price: { type: number }
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubLineItem"
+
+    SubLineItem:
+      type: object
+      properties:
+        name: { type: string }
+        value: { type: string }
+        quantity: { type: integer }
+        price: { type: number }
+        color: { type: string }
+        size: { type: string }
 
     Giftcard:
       type: object
@@ -646,24 +623,12 @@ components:
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
-    CustomOrder:
-      type: object
-      properties:
-        customOrderId: { type: string }
-        customerId: { type: string }
-        date: { type: string, format: date-time }
-        products:
-          type: array
-          items:
-            $ref: "#/components/schemas/Product"
-
     Configuration:
       type: object
       properties:
-        configId: { type: string }
+        configurationId: { type: string }
         name: { type: string }
         createdAt: { type: string, format: date-time }
-        details: { type: object }
 
     SustainOverview:
       type: object
