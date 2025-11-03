@@ -634,9 +634,34 @@ components:
       type: object
       properties:
         customerId: { type: string }
-        points: { type: number }
-        co2Saved: { type: number }
-        badgeLevel: { type: string }
+        giftcardTotal: { type: number }
+        cashTotal: { type: number }
+        productsSold: { type: integer }
+        productsUnsold: { type: integer }
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SustainOrder"
+
+    SustainOrder:
+      type: object
+      properties:
+        orderId: { type: string }
+        status:
+          type: enum
+          enum:
+            - active
+            - unsold
+            - sold
+            - removed
+        createdAt: { type: string, format: date-time }
+        soldAt: { type: string, format: date-time }
+        color: { type: string }
+        size: { type: string }
+        price: { type: number }
+        serviceFee: { type: number }
+        giftcardAmount: { type: number }
+        cashAmount: { type: number }
 
     Reminder:
       type: object
